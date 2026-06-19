@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FAST University – Admissions Seating Lookup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    background: #f0f7ff;
+    color: #0d1b2a;
+  }
+
+  header {
+    background: #fff;
+    border-bottom: 1.5px solid #c8e0f8;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 68px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-circle {
+    width: 42px;
+    height: 42px;
+    background: #1a6fc4;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .logo-text h1 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0d1b2a;
+    line-height: 1.2;
+  }
+
+  .logo-text p {
+    font-size: 11.5px;
+    color: #5a8abf;
+    letter-spacing: 0.3px;
+  }
+
+  .badge {
+    background: #e6f1fb;
+    color: #1a6fc4;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #c0d9f0;
+    letter-spacing: 0.5px;
+  }
+
+  .hero {
+    text-align: center;
+    padding: 3.5rem 2rem 2rem;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    background: #daeeff;
+    color: #1a6fc4;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+
+  .hero h2 {
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 700;
+    color: #0d1b2a;
+    line-height: 1.25;
+    margin-bottom: 0.6rem;
+  }
+
+  .hero h2 span { color: #1a6fc4; }
+
+  .hero p {
+    font-size: 15px;
+    color: #5a8abf;
+    max-width: 440px;
+    margin: 0 auto 2.2rem;
+    line-height: 1.6;
+  }
+
+  .search-card {
+    background: #fff;
+    border: 1.5px solid #c8e0f8;
+    border-radius: 18px;
+    padding: 2rem 2.2rem 2.4rem;
+    max-width: 520px;
+    margin: 0 auto;
+    box-shadow: 0 4px 30px rgba(26,111,196,0.07);
+  }
+
+  .search-card label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c5f8a;
+    margin-bottom: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .input-row input {
+    flex: 1;
+    height: 46px;
+    padding: 0 16px;
+    font-size: 15px;
+    border: 1.5px solid #c8e0f8;
+    border-radius: 10px;
+    background: #f5f9ff;
+    color: #0d1b2a;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .input-row input:focus {
+    border-color: #1a6fc4;
+    background: #fff;
+  }
+
+  .input-row input::placeholder { color: #a0bcd8; font-size: 13px; letter-spacing: 0; }
+
+  .btn-search {
+    height: 46px;
+    padding: 0 22px;
+    background: #1a6fc4;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .btn-search:hover { background: #155fa8; }
+  .btn-search:active { transform: scale(0.97); }
+
+  .search-hint {
+    font-size: 12px;
+    color: #9ab8d4;
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  .state-box {
+    margin-top: 1.5rem;
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    font-size: 13.5px;
+    display: none;
+  }
+
+  .state-box.error {
+    background: #fff1f0;
+    border: 1px solid #ffc4c0;
+    color: #b33a35;
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .state-box.loading {
+    background: #eaf4ff;
+    border: 1px solid #c0dcf5;
+    color: #1a6fc4;
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .result-card {
+    background: #fff;
+    border: 1.5px solid #c8e0f8;
+    border-radius: 18px;
+    padding: 1.8rem 2rem;
+    max-width: 520px;
+    margin: 1.5rem auto 0;
+    display: none;
+    box-shadow: 0 4px 30px rgba(26,111,196,0.07);
+  }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 1.4rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid #e8f2fb;
+  }
+
+  .result-avatar {
+    width: 46px;
+    height: 46px;
+    background: #daeeff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a6fc4;
+    flex-shrink: 0;
+  }
+
+  .result-name { font-size: 16px; font-weight: 700; color: #0d1b2a; }
+  .result-arn  { font-size: 12px; color: #7aafd0; margin-top: 2px; letter-spacing: 0.5px; }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .info-tile {
+    background: #f0f7ff;
+    border: 1px solid #d4e8f8;
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+
+  .info-tile .tile-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #7aafd0;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    margin-bottom: 4px;
+  }
+
+  .info-tile .tile-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0d1b2a;
+  }
+
+  .info-tile.full { grid-column: span 2; }
+
+  .success-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e6f8ef;
+    color: #1a7a45;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-top: 1.2rem;
+    border: 1px solid #b8e8cc;
+  }
+
+  .dot { width: 7px; height: 7px; background: #1a7a45; border-radius: 50%; }
+
+  .steps-row {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    max-width: 520px;
+    margin: 2.5rem auto 0;
+  }
+
+  .step {
+    flex: 1;
+    text-align: center;
+    padding: 0 8px;
+    position: relative;
+  }
+
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 17px;
+    right: -6px;
+    width: 12px;
+    height: 1.5px;
+    background: #c8e0f8;
+  }
+
+  .step-num {
+    width: 34px;
+    height: 34px;
+    background: #daeeff;
+    border: 1.5px solid #a5ccee;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a6fc4;
+    margin: 0 auto 8px;
+  }
+
+  .step-label {
+    font-size: 11.5px;
+    color: #7aafd0;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  footer {
+    text-align: center;
+    padding: 2.5rem 1rem 1.5rem;
+    font-size: 12px;
+    color: #a0bcd8;
+  }
+
+  footer strong { color: #5a8abf; }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #b8d8f5;
+    border-top-color: #1a6fc4;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 560px) {
+    .search-card, .result-card { margin: 0 1rem; }
+    .info-grid { grid-template-columns: 1fr; }
+    .info-tile.full { grid-column: span 1; }
+    .input-row { flex-direction: column; }
+    .btn-search { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <div class="logo-circle">FAST</div>
+    <div class="logo-text">
+      <h1>FAST University</h1>
+      <p>Islamabad Campus</p>
+    </div>
+  </div>
+  <div class="badge">Admissions 2026</div>
+</header>
+
+<main style="padding: 0 1rem 3rem;">
+
+  <div class="hero">
+    <div class="hero-tag">Seating Lookup</div>
+    <h2>Find your <span>exam seat</span><br>in seconds</h2>
+    <p>Enter your Applicant Registration Number to instantly view your assigned venue, lab, and seat.</p>
+  </div>
+
+  <div class="search-card">
+    <label for="arnInput">Applicant Registration Number (ARN)</label>
+    <div class="input-row">
+      <input id="arnInput" type="text" placeholder="e.g. FAST-2026-00123" maxlength="30"
+        onkeydown="if(event.key==='Enter') lookupARN()" />
+      <button class="btn-search" onclick="lookupARN()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Search
+      </button>
+    </div>
+    <div class="search-hint">Type your ARN exactly as printed on your admit card</div>
+
+    <div class="state-box loading" id="stateLoading">
+      <div class="spinner"></div>
+      <span>Looking up your record…</span>
+    </div>
+
+    <div class="state-box error" id="stateError">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span id="errorMsg">No record found for this ARN. Please check and try again.</span>
+    </div>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <div class="result-avatar" id="resultInitials">AB</div>
+      <div>
+        <div class="result-name" id="resultName">Applicant Name</div>
+        <div class="result-arn"  id="resultARNLabel">ARN: —</div>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-tile full">
+        <div class="tile-label">Venue</div>
+        <div class="tile-value" id="resultVenue">—</div>
+      </div>
+      <div class="info-tile">
+        <div class="tile-label">lab</div>
+        <div class="tile-value" id="resultlab">—</div>
+      </div>
+      <div class="info-tile">
+        <div class="tile-label">Seat No.</div>
+        <div class="tile-value" id="resultSeat">—</div>
+      </div>
+      <div class="info-tile">
+        <div class="tile-label">Exam Date</div>
+        <div class="tile-value" id="resultDate">—</div>
+      </div>
+      <div class="info-tile">
+        <div class="tile-label">Reporting Time</div>
+        <div class="tile-value" id="resultTime">—</div>
+      </div>
+    </div>
+
+    <div class="success-pill">
+      <div class="dot"></div>
+      Record found — please be present 30 min before your exam
+    </div>
+  </div>
+
+  <div class="steps-row">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-label">Scan QR or visit link</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-label">Enter your ARN</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-label">View your seat &amp; venue</div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <strong>FAST – National University of Computer and Emerging Sciences</strong><br>
+  Islamabad Campus &nbsp;·&nbsp; Admissions Cell &nbsp;·&nbsp; admissions@nu.edu.pk
+</footer>
+
+<script>
+
+  const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR8rdO_85pQYfFbUJ2aMLcXySVQHfZ6kRKyg2eH93w-oGHgAzrgDdecP_HX1yUVOflv0mNMPWrDkYHm/pub?gid=0&single=true&output=csv";
+  
+
+  let cachedData = null;
+
+  function showState(name) {
+    document.getElementById('stateLoading').style.display = 'none';
+    document.getElementById('stateError').style.display   = 'none';
+    document.getElementById('resultCard').style.display   = 'none';
+    if (name === 'loading') document.getElementById('stateLoading').style.display = 'flex';
+    if (name === 'error')   document.getElementById('stateError').style.display   = 'flex';
+    if (name === 'result')  document.getElementById('resultCard').style.display   = 'block';
+  }
+
+  function setError(msg) {
+    document.getElementById('errorMsg').textContent = msg;
+    showState('error');
+  }
+
+  function parseCSV(text) {
+    const lines = text.trim().split(/\r?\n/);
+    if (lines.length < 2) return [];
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/\s+/g, ''));
+    return lines.slice(1).map(line => {
+      const cols = line.split(',');
+      const row  = {};
+      headers.forEach((h, i) => row[h] = (cols[i] || '').trim());
+      return row;
+    });
+  }
+
+  async function loadSheet() {
+    if (cachedData) return cachedData;
+    const res = await fetch(SHEET_CSV_URL);
+    if (!res.ok) throw new Error('Sheet fetch failed');
+    cachedData = parseCSV(await res.text());
+    return cachedData;
+  }
+
+  function initials(name) {
+    if (!name) return '?';
+    const p = name.trim().split(/\s+/);
+    return (p[0][0] + (p[1] ? p[1][0] : '')).toUpperCase();
+  }
+
+  function renderResult(arn, name, venue, lab, seat, date, time) {
+    document.getElementById('resultInitials').textContent = initials(name);
+    document.getElementById('resultName').textContent     = name  || '—';
+    document.getElementById('resultARNLabel').textContent = 'ARN: ' + arn;
+    document.getElementById('resultVenue').textContent    = venue || '—';
+    document.getElementById('resultlab').textContent     = lab  || '—';
+    document.getElementById('resultSeat').textContent     = seat  || '—';
+    document.getElementById('resultDate').textContent     = date  || '—';
+    document.getElementById('resultTime').textContent     = time  || '—';
+    showState('result');
+    document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  async function lookupARN() {
+    const raw = document.getElementById('arnInput').value.trim();
+    if (!raw) { setError('Please enter your ARN before searching.'); return; }
+
+    showState('loading');
+
+    // Demo mode — remove once SHEET_CSV_URL is set
+    if (SHEET_CSV_URL === "YOUR_PUBLISHED_SHEET_CSV_URL_HERE") {
+      setTimeout(() => renderResult(
+        raw, 'Ali Hassan', 'FAST Main Campus — Block B',
+        'Examination lab 3', 'B-47', '28 Jun 2026', '9:00 AM'
+      ), 900);
+      return;
+    }
+
+    try {
+      const data = await loadSheet();
+      const key  = raw.toLowerCase();
+      const row  = data.find(r => (r['arn'] || '').toLowerCase() === key);
+      if (!row) {
+        setError('No record found for ARN "' + raw + '". Please double-check your admit card.');
+        return;
+      }
+      const seat = row['seatno'] || row['seat no'] || row['seatno'] || row['seat'];
+      renderResult(raw, row['name'], row['venue'], row['lab'], seat, row['date'], row['time']);
+    } catch (e) {
+      setError('Could not reach the data sheet. Please try again or contact the admissions office.');
+    }
+  }
+</script>
+
+</body>
+</html>
